@@ -62,13 +62,21 @@ def new_filename(key):
     new_key = f"{base_name}_thumbnail.png"
     return new_key
 
-def upload_to_s3(bucket, thumbnail_key, thumbnail, img_size):
-    # Upload the thumbnail to S3
-    s3.put_object(Bucket=bucket, Key=thumbnail_key, Body=thumbnail, ContentType='image/png')
-    
-    # Generate a pre-signed URL for the uploaded thumbnail
-    url = s3.generate_presigned_url('get_object', Params={'Bucket': bucket, 'Key': thumbnail_key}, ExpiresIn=3600)
-    
+def upload_to_s3(bucket, thumbnail_key, image, img_size):
+    out_thumbnail = io.BytesIO();
+
+    image.save(out_thumbnail, format='PNG')
+    out_thumbnail.seek(0)
+
+    response = s3.put_object(
+        ACL='public-read',
+        Bucket=bucket,  
+        Key=thumbnail_key,
+        Body=out_thumbnail,
+        ContentType='image/png',
+    )
+    print("Response::: ", response)
+    url = f"https://{bucket}.s3.amazonaws.com/{thumbnail_key}"
     return url
 
 
