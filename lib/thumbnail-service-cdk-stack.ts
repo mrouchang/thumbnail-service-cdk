@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
-import { Function, Code, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Function, Code, Runtime, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { join } from 'path';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
@@ -14,6 +14,11 @@ export class ThumbnailServiceCdkStack extends cdk.Stack {
       runtime: Runtime.PYTHON_3_10,
       timeout: cdk.Duration.seconds(20),
       handler: 'app.s3_thumbnail_generator',
+      layers: [LayerVersion.fromLayerVersionArn(
+        this, 
+        'PillowLayer', 
+        'arn:aws:lambda:us-east-1:770693421928:layer:Klayers-p39-pillow:1'
+      )],
       code: Code.fromAsset(join(__dirname, '../lambdas')),
       environment: {
         REGION_NAME: "us-east-1",
